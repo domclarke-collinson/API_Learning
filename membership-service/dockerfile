@@ -1,0 +1,14 @@
+# I Understand this bit
+FROM node:18
+
+WORKDIR /app
+
+# Copy package files and install dependencies first (cache-friendly)
+COPY package*.json ./
+RUN npm install
+
+# Copy the rest of the source
+COPY . .
+
+# For dev convenience (runs TS directly)
+CMD ["npx", "ts-node", "src/index.ts"]
