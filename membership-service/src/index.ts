@@ -1,4 +1,5 @@
 // I undersstand some of this but not most of it.
+// I need to learn about exxpress and Postgres
 
 import express, { Request, Response } from 'express';
 import { Pool } from 'pg';
@@ -6,16 +7,14 @@ import { Pool } from 'pg';
 const app = express();
 app.use(express.json());
 
-// Read DB config from environment with sensible defaults
 const pool = new Pool({
-  host: process.env.DB_HOST || 'postgres', // service name in docker-compose
+  host: process.env.DB_HOST || 'postgres', 
   port: Number(process.env.DB_PORT || 5432),
   user: process.env.DB_USER || 'myuser',
   password: process.env.DB_PASSWORD || 'mypassword',
   database: process.env.DB_NAME || 'mydb',
 });
 
-// Optional: catch pool errors for long-running apps
 pool.on('error', (err) => {
   console.error('Unexpected Postgres client error', err);
   process.exit(-1);
@@ -40,12 +39,12 @@ app.post('/memberships', async (req: Request, res: Response) => {
   try {
     const result = await pool.query(
       'INSERT INTO memberships (name, email) VALUES ($1, $2) RETURNING *',
-      [name, email] // parameterised query -> prevents SQL injection
+      [name, email] 
     );
     res.status(201).json(result.rows[0]);
   } catch (err: any) {
     console.error(err);
-    // example: handle unique constraint violation
+    
     if (err.code === '23505') {
       return res.status(409).json({ error: 'Email already exists' });
     }
@@ -53,7 +52,7 @@ app.post('/memberships', async (req: Request, res: Response) => {
   }
 });
 
-// Graceful shutdown (close DB pool)
+
 const PORT = Number(process.env.PORT || 4000);
 const server = app.listen(PORT, () => {
   console.log(`Membership service running on port ${PORT}`);
