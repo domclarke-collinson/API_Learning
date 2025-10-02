@@ -14,21 +14,21 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  # membership-service:
-  #   build: ./.remove/membership-service
-  #   container_name: membership_service
-  #   depends_on:
-  #     - postgres
-  #   environment:
-  #     DB_HOST: postgres
-  #     DB_PORT: 5432
-  #     DB_USER: myuser
-  #     DB_PASSWORD: mypassword
-  #     DB_NAME: mydb
-  #     PORT: 4000
-  #   ports:
-  #     - "4000:4000"
-  #   restart: unless-stopped
+  membership-service:
+    build: ./services/membership
+    container_name: membership_service
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: myuser
+      DB_PASSWORD: mypassword
+      DB_NAME: mydb
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
 
 volumes:
   pgdata:
