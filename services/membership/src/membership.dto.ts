@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
 
-export class CreateUser {
+export class createUser {
     @ApiProperty()
     @IsEmail()
     @IsNotEmpty()
@@ -12,5 +12,5 @@ export class CreateUser {
     @ApiProperty()
     @IsOptional()
     @Transform(({ value }) => value || null)
-    username?: string;
+    name?: string;
   }

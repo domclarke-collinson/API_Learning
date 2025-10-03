@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post} from '@nestjs/common';
 import { MembershipService } from './membership.service';
+import { createUser } from './membership.dto';
 
 @Controller()
 export class MembershipController {
@@ -8,5 +9,9 @@ export class MembershipController {
   @Get()
   getHello(): string {
     return this.membershipService.getHello();
+  }
+  @Post('/user')
+  createUser(@Body() body: createUser) {
+    return body;
   }
 }
