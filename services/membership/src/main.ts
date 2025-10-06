@@ -14,8 +14,8 @@ import { Membership } from './membership.entity';
       password: process.env.DB_PASSWORD || 'mypassword',
       database: process.env.DB_NAME || 'mydb',
       entities: [Membership],
-      synchronize: false, // Important: Set to false since you have existing schema
-      logging: true, // Optional: helps with debugging
+      synchronize: false,
+      logging: true,
     }),
     MembershipModule,
   ],

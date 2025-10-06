@@ -14,3 +14,16 @@ export class createUser {
     @Transform(({ value }) => value || null)
     name?: string;
   }
+
+  export class updateUser {
+
+    @ApiProperty()
+    @IsOptional()
+    @Transform(({ value }) => value || null)
+    email?: string;
+
+    @ApiProperty()
+    @IsOptional()
+    @Transform(({ value }) => value || null)
+    name?: string;
+  }
