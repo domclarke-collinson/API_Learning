@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Membership } from './membership.entity';
-import { createUser, updateUser } from './membership.dto';
+import { createUser, updateUser } from './dto/membership.dto';
 
 @Injectable()
 export class MembershipService {
@@ -24,24 +24,29 @@ export class MembershipService {
   }
 
   async findOne(id: number): Promise<Membership> {
-    return this.membershipRepository.findOne({ where: { id } }) as Promise<Membership>;
+    return this.membershipRepository.findOne({
+      where: { id },
+    }) as Promise<Membership>;
   }
 
   async findByEmail(email: string): Promise<Membership> {
-    return this.membershipRepository.findOne({ where: { email } }) as Promise<Membership>;
+    return this.membershipRepository.findOne({
+      where: { email },
+    }) as Promise<Membership>;
   }
 
   async findByName(name: string): Promise<Membership> {
-    return this.membershipRepository.findOne({ where: { name } }) as Promise<Membership>;
+    return this.membershipRepository.findOne({
+      where: { name },
+    }) as Promise<Membership>;
   }
 
-  async updateName(name: string, updateMembershipDto: updateUser): Promise<Membership> {
-    await this.membershipRepository.update(name, updateMembershipDto);
-    return this.findByName(name);
-  }
-  async updateEmail(email: string, updateMembershipDto: updateUser): Promise<Membership> {
-    await this.membershipRepository.update(email, updateMembershipDto);
-    return this.findByEmail(email);
+  async update(
+    id: number,
+    updateMembershipDto: updateUser,
+  ): Promise<Membership> {
+    await this.membershipRepository.update({ id }, updateMembershipDto);
+    return this.findOne(id);
   }
 
   async removeByID(id: number): Promise<void> {

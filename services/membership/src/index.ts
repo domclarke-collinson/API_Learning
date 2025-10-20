@@ -1,1 +1,1 @@
-export { MembershipModule } from "./membership.module";
+export * from './membership.module';
