@@ -1,24 +1,26 @@
 # API_Learning
-Learning To create API's with TypeScript/Docker/Express/node
+Learning To create API's
+
+Tech STack:
+- TypeScript
+- Docker
+- NestJS
 
 
 ## Steps:
 
-Create repository
-    ✅ DONE!
+- Create repository
 
-Create DB
-    ✅ DONE!    
-
-Create Services
-
-Membership
-    Service Created
-    Need to 
-
-Deals
+- Create DB
 
 
-Create Gateway 
+- Create Services
 
-Testing throughout
+  - Membership
+
+  - Deals
+
+
+- Create Gateway 
+
+- Testing throughout

@@ -1,0 +1,18 @@
+# documentation
+docs/
+README.md
+
+#cursorrules
+.cursorrules
+
+#test files
+test/
+
+#environment files
+.env
+
+#build files
+dist/
+
+#node files
+node_modules/

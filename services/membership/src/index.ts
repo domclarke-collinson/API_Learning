@@ -1,1 +1,0 @@
-export { MembershipModule } from "./membership.module";
