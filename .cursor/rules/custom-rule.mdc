@@ -1,0 +1,42 @@
+---
+name: custom-rule
+description: This is a new rule
+alwaysApply: true
+---
+
+## Development Workflow
+
+Always run the following commands at the end of each prompt to ensure code quality and functionality:
+
+1. `npm run start:dev` - Start development server
+2. `npm run build` - Build the application
+3. `npm run lint` - Run ESLint checks
+4. `npm run test` - Run test suite
+5. `npm run type-check` - Run TypeScript type checking
+
+## Rules
+
+- If any of these commands fail, fix the issues before considering the task complete
+- All commands must run successfully without errors
+- Address linting issues, test failures, and type errors immediately
+- Ensure the development environment is properly configured
+- Verify all tests pass and code quality standards are met
+
+## Documentation Requirements
+
+- **ALWAYS update relevant READMEs and documentation** after making changes
+- Update main `README.md` if changes affect overall project functionality
+- Update module-specific READMEs (e.g., `src/app/modules/http/README.md`) for module changes
+- Ensure documentation accurately reflects the current state of the codebase
+- Include usage examples for new features or changed functionality
+- Update API documentation if endpoints or decorators are modified
+- **In ask mode: Always provide comprehensive documentation updates as text for manual implementation**
+
+## Code Quality Standards
+
+- Follow ESLint rules and fix all warnings/errors
+- Maintain 100% test coverage where possible
+- Ensure TypeScript types are correct
+- Follow the established code patterns in the project
+- Keep the development server running without issues
+- **Keep documentation up-to-date with code changes**
