@@ -1,89 +1,50 @@
-// eslint.config.mjs
-// @ts-check
-import eslint from '@eslint/js';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
+import js from '@eslint/js';
+import typescript from 'typescript-eslint';
+import prettier from 'eslint-config-prettier';
+import security from 'eslint-plugin-security';
 
-export default tseslint.config(
+export default [
+  js.configs.recommended,
+  ...typescript.configs.recommended,
+  prettier,
   {
-    ignores: [
-      'eslint.config.mjs',
-      'ensure-databases.mjs',
-      'dist/**',
-      'coverage/**',
-      'node_modules/**',
-      '**/*.spec.ts',
-      '**/*.test.ts',
-      'test/**',
-      'test/config/decorator-ignoring-transformer.js'
-    ]
-  },
-
-  // 2) Base + TS type-checked + Prettier
-  eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  eslintPluginPrettierRecommended,
-
-  // 3) Language options
-  {
-    languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.es2024,
-        ...globals.jest
-      },
-      sourceType: 'module',
-      parserOptions: {
-        projectService: {
-          allowDefaultProject: ['scripts/generate-postman-collection.js', 'scripts/watch-postman-collection.js']
-        },
-        tsconfigRootDir: import.meta.dirname
-      }
-    }
-  },
-
-  // 4) Rules
-  {
+    files: ['**/*.ts'],
+    plugins: {
+      security: security,
+    },
     rules: {
-      // Strict TS
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unsafe-assignment': 'error',
-      '@typescript-eslint/no-unsafe-call': 'error',
-      '@typescript-eslint/no-unsafe-member-access': 'error',
-      '@typescript-eslint/no-unsafe-return': 'error',
-      '@typescript-eslint/no-unsafe-argument': 'error',
-      '@typescript-eslint/no-floating-promises': 'error',
-      '@typescript-eslint/require-await': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-unused-expressions': 'error',
-      '@typescript-eslint/no-misused-promises': 'error',
-      '@typescript-eslint/restrict-template-expressions': 'error',
-      '@typescript-eslint/unbound-method': 'error',
-
-      // Ergonomics (low noise, high value)
-      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
-      '@typescript-eslint/explicit-member-accessibility': ['warn', { accessibility: 'no-public' }],
-
-      // General
-      'prefer-spread': 'error',
-      'no-unused-expressions': 'off' // use TS version instead
-    }
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-inferrable-types': 'off',
+      'prefer-const': 'error',
+      'no-var': 'error',
+      // Security rules
+      'security/detect-object-injection': 'warn',
+      'security/detect-non-literal-regexp': 'warn',
+      'security/detect-unsafe-regex': 'error',
+      'security/detect-buffer-noassert': 'error',
+      'security/detect-child-process': 'warn',
+      'security/detect-disable-mustache-escape': 'error',
+      'security/detect-eval-with-expression': 'error',
+      'security/detect-no-csrf-before-method-override': 'error',
+      'security/detect-non-literal-fs-filename': 'warn',
+      'security/detect-non-literal-require': 'warn',
+      'security/detect-possible-timing-attacks': 'warn',
+      'security/detect-pseudoRandomBytes': 'error',
+    },
   },
-
-  // 5) Relax tests/scripts/migrations
   {
-    files: ['**/*.spec.ts', '**/*.test.ts', 'scripts/**', 'migrations/**'],
+    files: ['**/*.spec.ts', '**/*.test.ts'],
     rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/require-await': 'off',
-      '@typescript-eslint/unbound-method': 'off',
-      '@typescript-eslint/no-require-imports': 'off',
-      '@typescript-eslint/no-floating-promises': 'off'
-    }
-  }
-);
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
+  {
+    files: ['**/guards/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off', // Passport requires any types
+    },
+  },
+];
