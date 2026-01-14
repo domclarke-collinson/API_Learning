@@ -14,3 +14,119 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  keycloak-db:
+    image: postgres:17.6-alpine
+    container_name: auth-service-keycloak-db
+    # PostgreSQL 17.6-alpine supports ARM64 (M1/M2) natively
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak_user
+      POSTGRES_PASSWORD: keycloak_pass
+      POSTGRES_INITDB_ARGS: '--encoding=UTF-8 --lc-collate=C --lc-ctype=C'
+    ports:
+      - '5435:5432'
+    volumes:
+      - auth-service-keycloak-data:/var/lib/postgresql/data
+    command: >
+      postgres
+      -c shared_preload_libraries="pg_stat_statements"
+      -c pg_stat_statements.track=all
+      -c pg_stat_statements.max=10000
+      -c log_statement=all
+      -c log_min_duration_statement=0
+      -c max_connections=100
+      -c shared_buffers=128MB
+      -c effective_cache_size=512MB
+      -c maintenance_work_mem=32MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=2MB
+      -c min_wal_size=1GB
+      -c max_wal_size=2GB
+      -c tcp_keepalives_idle=600
+      -c tcp_keepalives_interval=30
+      -c tcp_keepalives_count=3
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U keycloak_user -d keycloak']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - auth-service-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=keycloak-db"
+
+  redis:
+    image: redis:7-alpine
+    container_name: auth-service-redis
+    # Redis 7-alpine supports ARM64 (M1/M2) natively
+    ports:
+      - '6379:6379'
+    volumes:
+      - auth-service-redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - auth-service-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=redis"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.0
+    container_name: auth-service-keycloak
+    # Keycloak 26.4.0+ supports ARM64 (M1/M2) natively
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: localhost
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://auth-service-keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak_user
+      KC_DB_PASSWORD: keycloak_pass
+      KC_HTTP_ENABLED: true
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HTTP_RELATIVE_PATH: /
+      KC_PROXY: edge
+      KC_PROXY_HEADERS: xforwarded
+    ports:
+      - '8082:8080'
+    command: ['start-dev']
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'exec 3<>/dev/tcp/localhost/8080 && echo -e "GET /realms/master HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" >&3 && cat <&3 | grep -q "HTTP/1.1" || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - auth-service-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=keycloak"
+
