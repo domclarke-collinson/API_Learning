@@ -4,10 +4,10 @@ async function revertLastMigration() {
   try {
     console.log('Initializing data source...');
     await dataSource.initialize();
-    
+
     console.log('Reverting last migration...');
     await dataSource.undoLastMigration();
-    
+
     console.log('Migration reverted successfully!');
     await dataSource.destroy();
     process.exit(0);

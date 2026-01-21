@@ -1,24 +1,24 @@
-import { Module } from "@nestjs/common";
-import { MembershipModule } from "src/membership";
-import { DealModule } from "src/deals";
-import { HealthController } from "./modules/health/health.controller";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { join } from "path";
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
+import { DealModule } from 'src/deals';
+import { MembershipModule } from 'src/membership';
 import { AppConfigService } from './config/config.service';
+import { HealthController } from './modules/health/health.controller';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env'],
+      envFilePath: ['.env']
     }),
-    
+
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         const isDevelopment = configService.get<string>('NODE_ENV', 'development') === 'development';
-        
+
         return {
           type: 'postgres',
           host: configService.get<string>('DB_HOST', 'localhost'),
@@ -35,16 +35,16 @@ import { AppConfigService } from './config/config.service';
           retryDelay: 3000,
           extra: {
             max: 10,
-            connectionTimeoutMillis: 10000,
-          },
+            connectionTimeoutMillis: 10000
+          }
         };
       },
-      inject: [ConfigService],
+      inject: [ConfigService]
     }),
     MembershipModule,
-    DealModule,
+    DealModule
   ],
   controllers: [HealthController],
-  providers: [AppConfigService],
+  providers: [AppConfigService]
 })
 export class AppModule {}

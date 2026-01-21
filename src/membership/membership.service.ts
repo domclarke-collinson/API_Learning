@@ -7,33 +7,33 @@ import { Membership } from './membership.entity';
 export class MembershipService {
   constructor(
     @InjectRepository(Membership)
-    private readonly membershipRepository: Repository<Membership>,
+    private readonly membershipRepository: Repository<Membership>
   ) {}
 
   async findAll(): Promise<Membership[]> {
     return this.membershipRepository.find({
-      relations: ['deal'],
+      relations: ['deal']
     });
   }
 
   async findOne(id: number): Promise<Membership | null> {
     return this.membershipRepository.findOne({
       where: { id },
-      relations: ['deal'],
+      relations: ['deal']
     });
   }
 
   async findByEmail(email: string): Promise<Membership | null> {
     return this.membershipRepository.findOne({
       where: { email },
-      relations: ['deal'],
+      relations: ['deal']
     });
   }
 
   async findByDealId(dealId: number): Promise<Membership[]> {
     return this.membershipRepository.find({
       where: { dealId },
-      relations: ['deal'],
+      relations: ['deal']
     });
   }
 

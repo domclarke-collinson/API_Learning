@@ -1,0 +1,14 @@
+{
+  // "editor.codeActionsOnSave": {
+  //   "source.fixAll.eslint": "explicit"
+  // },
+  "eslint.validate": ["typescript"],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.configPath": ".prettierrc",
+  "prettier.prettierPath": "./node_modules/prettier",
+  "editor.formatOnSave": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "javascript.suggest.names": false,
+  "cSpell.words": ["persistable"],
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

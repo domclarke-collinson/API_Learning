@@ -7,6 +7,6 @@ import { SeedService } from './seed.service';
 @Module({
   imports: [TypeOrmModule.forFeature([Deal, Membership])],
   providers: [SeedService],
-  exports: [SeedService],
+  exports: [SeedService]
 })
 export class SeedModule {}

@@ -1,18 +1,13 @@
-import { Deal } from '../deal.entity';
 import { DealStatus } from '../deal-enums';
+import { Deal } from '../deal.entity';
 
 export class DealResponseModel {
   dealId: number;
-  clientId: number;
+  clientId: string;
   status: DealStatus;
   createdAt: Date;
 
-  constructor(
-    dealId: number,
-    clientId: number,
-    status: DealStatus,
-    createdAt: Date,
-  ) {
+  constructor(dealId: number, clientId: string, status: DealStatus, createdAt: Date) {
     this.dealId = dealId;
     this.clientId = clientId;
     this.status = status;
@@ -24,17 +19,12 @@ export class DealResponseModel {
       deal_id: this.dealId,
       client_id: this.clientId,
       status: this.status,
-      created_at: this.createdAt,
+      created_at: this.createdAt
     };
   }
 
   static fromEntity(entity: Deal): DealResponseModel {
-    return new DealResponseModel(
-      entity.dealId,
-      entity.clientId,
-      entity.status,
-      entity.createdAt,
-    );
+    return new DealResponseModel(entity.dealId, entity.clientId, entity.status, entity.createdAt);
   }
 
   static fromEntities(entities: Deal[]): DealResponseModel[] {

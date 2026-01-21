@@ -1,5 +1,4 @@
-import { Membership } from "../membership.entity";
-
+import { Membership } from '../membership.entity';
 
 export class CreateMembershipModel {
   email: string;
@@ -10,7 +9,7 @@ export class CreateMembershipModel {
 
   toJSON() {
     return {
-      email: this.email,
+      email: this.email
     };
   }
 

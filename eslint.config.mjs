@@ -1,7 +1,7 @@
 import js from '@eslint/js';
-import typescript from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 import security from 'eslint-plugin-security';
+import typescript from 'typescript-eslint';
 
 export default [
   js.configs.recommended,
@@ -10,7 +10,7 @@ export default [
   {
     files: ['**/*.ts'],
     plugins: {
-      security: security,
+      security: security
     },
     rules: {
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
@@ -32,19 +32,19 @@ export default [
       'security/detect-non-literal-fs-filename': 'warn',
       'security/detect-non-literal-require': 'warn',
       'security/detect-possible-timing-attacks': 'warn',
-      'security/detect-pseudoRandomBytes': 'error',
-    },
+      'security/detect-pseudoRandomBytes': 'error'
+    }
   },
   {
     files: ['**/*.spec.ts', '**/*.test.ts'],
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-    },
+      '@typescript-eslint/no-explicit-any': 'off'
+    }
   },
   {
     files: ['**/guards/**/*.ts'],
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off', // Passport requires any types
-    },
-  },
+      '@typescript-eslint/no-explicit-any': 'off' // Passport requires any types
+    }
+  }
 ];

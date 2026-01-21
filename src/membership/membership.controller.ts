@@ -1,7 +1,7 @@
-import { Controller, Get, Param, NotFoundException, Logger, Query } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiQuery } from '@nestjs/swagger';
-import { MembershipService } from './membership.service';
+import { Controller, Get, Logger, NotFoundException, Param, Query } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Membership } from './membership.entity';
+import { MembershipService } from './membership.service';
 
 @ApiTags('memberships')
 @Controller('memberships')
@@ -34,11 +34,11 @@ export class MembershipController {
   async findOne(@Param('id') id: string): Promise<Membership> {
     try {
       const membership = await this.membershipService.findOne(parseInt(id, 10));
-      
+
       if (!membership) {
         throw new NotFoundException(`Membership with ID ${id} not found`);
       }
-      
+
       return membership;
     } catch (error) {
       this.logger.error(`Error fetching membership ${id}`, error);

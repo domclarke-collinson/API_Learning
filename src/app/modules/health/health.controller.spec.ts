@@ -6,17 +6,17 @@ describe('HealthController Unit', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [HealthController],
+      controllers: [HealthController]
     }).compile();
 
     controller = module.get<HealthController>(HealthController);
   });
 
-  it("should be defined", () => {
+  it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
-  it("returns 200 when Health check is successful", () => {
+  it('returns 200 when Health check is successful', () => {
     const result = controller.healthCheck();
     expect(result).toMatchObject({ status: 'ok' });
   });

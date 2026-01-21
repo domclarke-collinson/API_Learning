@@ -1,6 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from 'typeorm';
-import { IsEnum, IsInt, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum, IsString, Length, Matches } from 'class-validator';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Membership } from '../membership/membership.entity';
 import { DealStatus } from './deal-enums';
 
@@ -10,22 +10,30 @@ export class Deal {
   @ApiProperty({ description: 'Deal ID' })
   dealId: number;
 
-  @Column({ type: 'integer', name: 'client_id' })
-  @IsInt()
-  @Min(1)
-  @ApiProperty({ description: 'Client ID', minimum: 1 })
-  clientId: number;
+  @Column({ type: 'varchar', length: 64, name: 'client_id' })
+  @IsString()
+  @Length(1, 64)
+  @Matches(/^[a-zA-Z0-9]+$/, {
+    message: 'client_id must contain only alphanumeric characters (a-z, A-Z, 0-9)'
+  })
+  @ApiProperty({
+    description: 'Client ID (alphanumeric, 1-64 characters)',
+    example: 'CLIENT001',
+    minLength: 1,
+    maxLength: 64
+  })
+  clientId: string;
 
   @Column({
     type: 'enum',
     enum: DealStatus,
-    default: DealStatus.Draft,
+    default: DealStatus.Draft
   })
   @IsEnum(DealStatus)
-  @ApiProperty({ 
-    description: 'Deal status', 
+  @ApiProperty({
+    description: 'Deal status',
     enum: DealStatus,
-    default: DealStatus.Draft 
+    default: DealStatus.Draft
   })
   status: DealStatus;
 

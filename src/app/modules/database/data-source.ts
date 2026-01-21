@@ -1,7 +1,7 @@
-import { DataSource, DataSourceOptions } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
 import { join } from 'path';
+import { DataSource, DataSourceOptions } from 'typeorm';
 
 // Load environment variables
 config();
@@ -18,7 +18,7 @@ export const dataSourceOptions: DataSourceOptions = {
   entities: [join(__dirname, '../../..', '**', '*.entity.{ts,js}')],
   migrations: [join(__dirname, 'migrations', '*.{ts,js}')],
   synchronize: false, // Always false when using migrations
-  logging: configService.get<string>('NODE_ENV', 'development') === 'development',
+  logging: configService.get<string>('NODE_ENV', 'development') === 'development'
 };
 
 const dataSource = new DataSource(dataSourceOptions);

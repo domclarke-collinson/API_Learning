@@ -1,6 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { IsEnum, IsEmail, IsString, Length, IsInt, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsEnum, IsInt, IsString, Length, Min } from 'class-validator';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Deal } from '../deals/deal.entity';
 import { MembershipStatus } from './membership-enums';
 
@@ -35,13 +35,13 @@ export class Membership {
   @Column({
     type: 'enum',
     enum: MembershipStatus,
-    default: MembershipStatus.ACTIVE,
+    default: MembershipStatus.ACTIVE
   })
   @IsEnum(MembershipStatus)
-  @ApiProperty({ 
-    description: 'Membership status', 
+  @ApiProperty({
+    description: 'Membership status',
     enum: MembershipStatus,
-    default: MembershipStatus.ACTIVE 
+    default: MembershipStatus.ACTIVE
   })
   status: MembershipStatus;
 

@@ -22,11 +22,12 @@ export class InitialSchema1737504000000 implements MigrationInterface {
       END $$;
     `);
 
-    // Create deals table
+    // Create deals table with client_id as VARCHAR(64)
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS deals (
         deal_id SERIAL PRIMARY KEY,
-        client_id INTEGER NOT NULL CHECK (client_id > 0),
+        client_id VARCHAR(64) NOT NULL 
+          CHECK (client_id ~ '^[a-zA-Z0-9]+$' AND LENGTH(client_id) >= 1 AND LENGTH(client_id) <= 64),
         status deal_status NOT NULL DEFAULT 'DRAFT',
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       );

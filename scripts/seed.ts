@@ -1,17 +1,17 @@
-import { NestFactory } from '@nestjs/core';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
+import { SeedService } from '../src/app/modules/database/seed/seed.service';
 import { Deal } from '../src/deals/deal.entity';
 import { Membership } from '../src/membership/membership.entity';
-import { SeedService } from '../src/app/modules/database/seed/seed.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env'],
+      envFilePath: ['.env']
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -29,22 +29,22 @@ import { SeedService } from '../src/app/modules/database/seed/seed.service';
         retryDelay: 3000,
         extra: {
           max: 10,
-          connectionTimeoutMillis: 10000,
-        },
+          connectionTimeoutMillis: 10000
+        }
       }),
-      inject: [ConfigService],
+      inject: [ConfigService]
     }),
-    TypeOrmModule.forFeature([Deal, Membership]),
+    TypeOrmModule.forFeature([Deal, Membership])
   ],
-  providers: [SeedService],
+  providers: [SeedService]
 })
 class SeedModule {}
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(SeedModule);
-  
+
   const seedService = app.get(SeedService);
-  
+
   await seedService.seed();
   await app.close();
 }
