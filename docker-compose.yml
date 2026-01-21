@@ -24,7 +24,6 @@ services:
       - "5438:5432"
     volumes:
       - postgres-data-training:/var/lib/postgresql/data
-      - ./src/app/modules/database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   keycloak-db:
     image: postgres:17.6-alpine

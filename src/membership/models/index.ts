@@ -1,1 +1,1 @@
-export * from './createMembership.model';
+export * from './create-membership.model';

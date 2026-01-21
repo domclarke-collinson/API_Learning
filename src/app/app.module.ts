@@ -1,41 +1,50 @@
 import { Module } from "@nestjs/common";
-import { MembershipModule, Membership } from "src/membership";
+import { MembershipModule } from "src/membership";
+import { DealModule } from "src/deals";
 import { HealthController } from "./modules/health/health.controller";
-import { ConfigModule } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { join } from "path";
+import { AppConfigService } from './config/config.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['.env'],
     }),
     
-    // TypeORM configuration - connects to PostgreSQL database
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5438', 10),
-      username: process.env.DB_USERNAME || 'myuser',
-      password: process.env.DB_PASSWORD || 'mypassword',
-      database: process.env.DB_NAME || 'mydb',
-      entities: [Membership],
-      synchronize: false,
-      logging: true,
-      // Add connection retry logic
-      retryAttempts: 3,
-      retryDelay: 3000,
-      // Add connection timeout
-      connectTimeoutMS: 10000,
-      // Better error messages
-      extra: {
-        max: 10, // Maximum number of connections in the pool
-        connectionTimeoutMillis: 10000,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        const isDevelopment = configService.get<string>('NODE_ENV', 'development') === 'development';
+        
+        return {
+          type: 'postgres',
+          host: configService.get<string>('DB_HOST', 'localhost'),
+          port: configService.get<number>('DB_PORT', 5438),
+          username: configService.get<string>('DB_USERNAME', 'myuser'),
+          password: configService.get<string>('DB_PASSWORD', 'mypassword'),
+          database: configService.get<string>('DB_NAME', 'mydb'),
+          entities: [join(__dirname, '..', '**', '*.entity.{ts,js}')],
+          migrations: [join(__dirname, 'modules', 'database', 'migrations', '*.{ts,js}')],
+          migrationsRun: false, // Set to true to auto-run migrations on startup
+          synchronize: isDevelopment && configService.get<string>('USE_MIGRATIONS', 'false') !== 'true',
+          logging: isDevelopment,
+          retryAttempts: 3,
+          retryDelay: 3000,
+          extra: {
+            max: 10,
+            connectionTimeoutMillis: 10000,
+          },
+        };
       },
+      inject: [ConfigService],
     }),
-    
-    MembershipModule
+    MembershipModule,
+    DealModule,
   ],
   controllers: [HealthController],
-  providers: [],
+  providers: [AppConfigService],
 })
 export class AppModule {}

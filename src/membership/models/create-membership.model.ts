@@ -14,7 +14,7 @@ export class CreateMembershipModel {
     };
   }
 
-  static fromJSON(json: any) {
+  static fromJSON(json: { email: string }) {
     return new CreateMembershipModel(json.email);
   }
 
