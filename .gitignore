@@ -12,3 +12,6 @@ node_modules/
 
 #build files
 dist/
+
+# Test Coverage reports
+coverage/

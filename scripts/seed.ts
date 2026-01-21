@@ -3,9 +3,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
 import { join } from 'path';
-import { Deal } from '../deals/deal.entity';
-import { Membership } from '../membership/membership.entity';
-import { SeedService } from '../app/modules/database/seed/seed.service';
+import { Deal } from '../src/deals/deal.entity';
+import { Membership } from '../src/membership/membership.entity';
+import { SeedService } from '../src/app/modules/database/seed/seed.service';
 
 @Module({
   imports: [

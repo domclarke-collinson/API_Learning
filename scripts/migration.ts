@@ -1,4 +1,4 @@
-import dataSource from '../app/modules/database/data-source';
+import dataSource from '../src/app/modules/database/data-source';
 
 async function runMigrations() {
   try {
