@@ -1,22 +1,34 @@
-version: "3.9"
+networks:
+  auth-service-network:
+    driver: 'bridge'
+volumes:
+  auth-service-keycloak-data-training:
+    driver: 'local'
+  auth-service-keycloak-db-data-training:
+    driver: 'local'
+  auth-service-redis-data-training:
+    driver: 'local'
+  postgres-data-training:
+    driver: 'local'
+
 services:
   postgres:
     image: postgres:15
-    container_name: postgres_db
+    container_name: postgres_db_training
     restart: always
     environment:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: mydb
     ports:
-      - "5432:5432"
+      - "5438:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres-data-training:/var/lib/postgresql/data
+      - ./src/app/modules/database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   keycloak-db:
     image: postgres:17.6-alpine
-    container_name: auth-service-keycloak-db
+    container_name: auth-service-keycloak-db-training
     # PostgreSQL 17.6-alpine supports ARM64 (M1/M2) natively
     environment:
       POSTGRES_DB: keycloak
@@ -24,9 +36,9 @@ services:
       POSTGRES_PASSWORD: keycloak_pass
       POSTGRES_INITDB_ARGS: '--encoding=UTF-8 --lc-collate=C --lc-ctype=C'
     ports:
-      - '5435:5432'
+      - '5439:5432'
     volumes:
-      - auth-service-keycloak-data:/var/lib/postgresql/data
+      - auth-service-keycloak-db-data-training:/var/lib/postgresql/data
     command: >
       postgres
       -c shared_preload_libraries="pg_stat_statements"
@@ -67,12 +79,12 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: auth-service-redis
+    container_name: auth-service-redis-training
     # Redis 7-alpine supports ARM64 (M1/M2) natively
     ports:
-      - '6379:6379'
+      - '6388:6379'
     volumes:
-      - auth-service-redis-data:/data
+      - auth-service-redis-data-training:/data:rw
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
@@ -92,14 +104,14 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.4.0
-    container_name: auth-service-keycloak
+    container_name: auth-service-keycloak-training
     # Keycloak 26.4.0+ supports ARM64 (M1/M2) natively
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_HOSTNAME: localhost
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://auth-service-keycloak-db:5432/keycloak
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
       KC_DB_USERNAME: keycloak_user
       KC_DB_PASSWORD: keycloak_pass
       KC_HTTP_ENABLED: true
@@ -109,13 +121,13 @@ services:
       KC_PROXY: edge
       KC_PROXY_HEADERS: xforwarded
     ports:
-      - '8082:8080'
+      - '8085:8080'
     command: ['start-dev']
     depends_on:
       keycloak-db:
         condition: service_healthy
     healthcheck:
-      test: ['CMD-SHELL', 'exec 3<>/dev/tcp/localhost/8080 && echo -e "GET /realms/master HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" >&3 && cat <&3 | grep -q "HTTP/1.1" || exit 1']
+      test: ['CMD-SHELL', 'exec 3<>/dev/tcp/localhost/8080 && echo -e "GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" >&3 && cat <&3 | grep -q "HTTP" || exit 1']
       interval: 30s
       timeout: 10s
       retries: 10
