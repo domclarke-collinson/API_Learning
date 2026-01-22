@@ -1,7 +1,20 @@
-import { Controller, Get, Logger, NotFoundException, Param, Query } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Logger,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Query
+} from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Membership } from './membership.entity';
 import { MembershipService } from './membership.service';
+import { CreateMembershipModel, UpdateMembershipModel } from './models';
 
 @ApiTags('memberships')
 @Controller('memberships')
@@ -42,6 +55,49 @@ export class MembershipController {
       return membership;
     } catch (error) {
       this.logger.error(`Error fetching membership ${id}`, error);
+      throw error;
+    }
+  }
+
+  @Post('create/:dealID')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a new membership for a deal' })
+  @ApiParam({ name: 'dealID', type: 'number', description: 'Deal ID' })
+  @ApiBody({ type: CreateMembershipModel })
+  @ApiResponse({ status: 201, description: 'Membership created successfully', type: Membership })
+  @ApiResponse({ status: 400, description: 'Bad request - invalid input' })
+  async create(
+    @Param('dealID') dealID: string,
+    @Body() createMembershipDto: CreateMembershipModel
+  ): Promise<Membership> {
+    try {
+      const membership = await this.membershipService.create({
+        name: createMembershipDto.name,
+        email: createMembershipDto.email,
+        dealId: parseInt(dealID, 10)
+      });
+
+      return membership;
+    } catch (error) {
+      this.logger.error('Error creating membership', error);
+      throw error;
+    }
+  }
+
+  @Patch('update/:id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update a membership status by ID' })
+  @ApiParam({ name: 'id', type: 'number', description: 'Membership ID' })
+  @ApiBody({ type: UpdateMembershipModel })
+  @ApiResponse({ status: 200, description: 'Membership updated successfully', type: Membership })
+  @ApiResponse({ status: 400, description: 'Bad request - invalid input' })
+  @ApiResponse({ status: 404, description: 'Membership not found' })
+  async updateStatus(@Param('id') id: string, @Body() updateMembershipDto: UpdateMembershipModel): Promise<Membership> {
+    try {
+      const membership = await this.membershipService.update(parseInt(id, 10), updateMembershipDto);
+      return membership;
+    } catch (error) {
+      this.logger.error(`Error updating membership ${id}`, error);
       throw error;
     }
   }

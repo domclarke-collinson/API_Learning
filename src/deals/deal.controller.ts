@@ -8,6 +8,7 @@ import {
   Logger,
   NotFoundException,
   Param,
+  Patch,
   Post,
   Query
 } from '@nestjs/common';
@@ -15,7 +16,7 @@ import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from 
 import { DealStatus } from './deal-enums';
 import { Deal } from './deal.entity';
 import { DealService } from './deal.service';
-import { CreateDealModel, DealResponseModel } from './models';
+import { CreateDealModel, DealResponseModel, UpdateDealModel } from './models';
 
 @ApiTags('deals')
 @Controller('deals')
@@ -55,26 +56,6 @@ export class DealController {
     }
   }
 
-  @Post('/create')
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create a new deal' })
-  @ApiBody({ type: CreateDealModel })
-  @ApiResponse({ status: 201, description: 'Deal created successfully', type: DealResponseModel })
-  @ApiResponse({ status: 400, description: 'Bad request - invalid input' })
-  async create(@Body() createDealDto: CreateDealModel): Promise<DealResponseModel> {
-    try {
-      const deal = await this.dealService.create({
-        clientId: createDealDto.client_id,
-        status: createDealDto.status
-      });
-
-      return DealResponseModel.fromEntity(deal);
-    } catch (error) {
-      this.logger.error('Error creating deal', error);
-      throw error;
-    }
-  }
-
   @Get(':dealId')
   @ApiOperation({ summary: 'Get a deal by ID' })
   @ApiParam({ name: 'dealId', type: 'number', description: 'Deal ID' })
@@ -107,5 +88,46 @@ export class DealController {
     throw new BadRequestException(
       `Invalid status: ${status}. Valid values are: ${Object.values(DealStatus).join(', ')}`
     );
+  }
+
+  @Post('/create')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a new deal' })
+  @ApiBody({ type: CreateDealModel })
+  @ApiResponse({ status: 201, description: 'Deal created successfully', type: DealResponseModel })
+  @ApiResponse({ status: 400, description: 'Bad request - invalid input' })
+  async create(@Body() createDealDto: CreateDealModel): Promise<DealResponseModel> {
+    try {
+      const deal = await this.dealService.create({
+        clientId: createDealDto.client_id,
+        status: createDealDto.status
+      });
+
+      return DealResponseModel.fromEntity(deal);
+    } catch (error) {
+      this.logger.error('Error creating deal', error);
+      throw error;
+    }
+  }
+
+  @Patch('update/:dealId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update a deal status by ID' })
+  @ApiParam({ name: 'dealId', type: 'number', description: 'Deal ID' })
+  @ApiBody({ type: UpdateDealModel })
+  @ApiResponse({ status: 200, description: 'Deal updated successfully', type: DealResponseModel })
+  @ApiResponse({ status: 400, description: 'Bad request - invalid input' })
+  @ApiResponse({ status: 404, description: 'Deal not found' })
+  async updateStatus(
+    @Param('dealId') dealId: string,
+    @Body() updateDealDto: UpdateDealModel
+  ): Promise<DealResponseModel> {
+    try {
+      const deal = await this.dealService.update(parseInt(dealId, 10), updateDealDto);
+      return DealResponseModel.fromEntity(deal);
+    } catch (error) {
+      this.logger.error(`Error updating deal ${dealId}`, error);
+      throw error;
+    }
   }
 }

@@ -1,23 +1,23 @@
-import { Membership } from '../membership.entity';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsString, Length } from 'class-validator';
 
 export class CreateMembershipModel {
+  @ApiProperty({
+    description: 'Member email address',
+    example: 'user@example.com',
+    format: 'email'
+  })
+  @IsEmail()
+  @IsString()
   email: string;
 
-  constructor(email: string) {
-    this.email = email;
-  }
-
-  toJSON() {
-    return {
-      email: this.email
-    };
-  }
-
-  static fromJSON(json: { email: string }) {
-    return new CreateMembershipModel(json.email);
-  }
-
-  static fromEntity(entity: Membership) {
-    return new CreateMembershipModel(entity.email);
-  }
+  @ApiProperty({
+    description: 'Member name',
+    example: 'John Doe',
+    minLength: 1,
+    maxLength: 100
+  })
+  @IsString()
+  @Length(1, 100)
+  name: string;
 }

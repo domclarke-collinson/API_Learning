@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DealStatus } from './deal-enums';
 import { Deal } from './deal.entity';
+import { UpdateDealModel } from './models/update-deal.model';
 
 @Injectable()
 export class DealService {
@@ -43,6 +44,17 @@ export class DealService {
       clientId: dealData.clientId,
       status: dealData.status || DealStatus.Draft
     });
+    return this.dealRepository.save(deal);
+  }
+
+  async update(dealId: number, updateData: UpdateDealModel): Promise<Deal> {
+    const deal = await this.findOne(dealId);
+
+    if (!deal) {
+      throw new NotFoundException(`Deal with ID ${dealId} not found`);
+    }
+
+    deal.status = updateData.status;
     return this.dealRepository.save(deal);
   }
 }
