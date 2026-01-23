@@ -5,6 +5,7 @@ import { join } from 'path';
 import { DealModule } from 'src/deals';
 import { MembershipModule } from 'src/membership';
 import { AppConfigService } from './config/config.service';
+import { AuthServiceModule } from './modules/auth/auth.module';
 import { HealthController } from './modules/health/health.controller';
 
 @Module({
@@ -42,7 +43,8 @@ import { HealthController } from './modules/health/health.controller';
       inject: [ConfigService]
     }),
     MembershipModule,
-    DealModule
+    DealModule,
+    AuthServiceModule.forRoot()
   ],
   controllers: [HealthController],
   providers: [AppConfigService]

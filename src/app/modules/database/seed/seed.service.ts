@@ -47,21 +47,21 @@ export class SeedService {
       name: 'Clark Kent',
       email: 'clark.kent@example.com',
       dealId: savedDeals[0].dealId,
-      status: MembershipStatus.ACTIVE
+      status: MembershipStatus.Active
     });
 
     const membership2 = this.membershipRepository.create({
       name: 'Bruce Wayne',
       email: 'bruce.wayne@example.com',
       dealId: savedDeals[0].dealId,
-      status: MembershipStatus.INACTIVE
+      status: MembershipStatus.Inactive
     });
 
     const membership3 = this.membershipRepository.create({
       name: 'Diana Prince',
       email: 'diana.prince@example.com',
       dealId: savedDeals[0].dealId,
-      status: MembershipStatus.CANCELLED
+      status: MembershipStatus.Cancelled
     });
 
     const savedMemberships = await this.membershipRepository.save([membership1, membership2, membership3]);

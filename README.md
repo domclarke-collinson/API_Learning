@@ -9,6 +9,7 @@ A NestJS-based REST API for managing Deals and Memberships, built with TypeScrip
 - **PostgreSQL** - Relational database
 - **TypeORM** - Object-Relational Mapping
 - **Docker** - Containerization for database services
+- **Keycloak** - Identity and Access Management
 - **Jest** - Testing framework
 - **ESLint & Prettier** - Code quality and formatting
 
@@ -28,10 +29,16 @@ A NestJS-based REST API for managing Deals and Memberships, built with TypeScrip
    - Membership status management (active, inactive, cancelled)
    - Create membership models
 
-3. **Health Module** (`src/app/modules/health/`)
+3. **Auth Module** (`src/app/modules/auth/`)
+   - OAuth2 token endpoint for Keycloak integration
+   - Authentication guard for protecting endpoints
+   - Token validation service
+   - Client credentials flow support
+
+4. **Health Module** (`src/app/modules/health/`)
    - Health check endpoint for monitoring
 
-4. **Database Module** (`src/app/modules/database/`)
+5. **Database Module** (`src/app/modules/database/`)
    - Database configuration and migrations
    - Seed service for initial data
 
@@ -42,10 +49,72 @@ A NestJS-based REST API for managing Deals and Memberships, built with TypeScrip
 #### Deals
 - `GET /deals` - Get all deals (with optional filters: `client_id`, `status`)
 - `GET /deals/:dealId` - Get a specific deal by ID
+- `POST /deals/create` - Create a new deal
+  - **Request Body:**
+    ```json
+    {
+      "client_id": "string (alphanumeric, 1-64 characters)",
+      "status": "DRAFT | ACTIVE | INACTIVE (optional, defaults to DRAFT)"
+    }
+    ```
+  - **Response:** `201 Created` - Returns the created deal
+- `PATCH /deals/update/:dealId` - Update a deal status by ID
+  - **Path Parameter:** `dealId` (number)
+  - **Request Body:**
+    ```json
+    {
+      "status": "DRAFT | ACTIVE | INACTIVE"
+    }
+    ```
+  - **Response:** `200 OK` - Returns the updated deal
 
 #### Memberships
 - `GET /memberships` - Get all memberships (with optional filter: `deal_id`)
 - `GET /memberships/:id` - Get a specific membership by ID
+- `POST /memberships/create/:dealID` - Create a new membership for a deal
+  - **Path Parameter:** `dealID` (number)
+  - **Request Body:**
+    ```json
+    {
+      "name": "string (1-100 characters)",
+      "email": "string (valid email address)"
+    }
+    ```
+  - **Response:** `201 Created` - Returns the created membership
+- `PATCH /memberships/update/:id` - Update a membership status by ID
+  - **Path Parameter:** `id` (number)
+  - **Request Body:**
+    ```json
+    {
+      "status": "active | inactive | cancelled"
+    }
+    ```
+  - **Response:** `200 OK` - Returns the updated membership
+
+#### Authentication
+- `POST /oauth2/token` - Get OAuth2 access token (Keycloak)
+  - **Request Body:**
+    ```json
+    {
+      "client_id": "string (1-255 characters, required)",
+      "client_secret": "string (1-255 characters, required)",
+      "realm": "string (1-255 characters, required)",
+      "scope": "string (1-1000 characters, optional, defaults to 'all')"
+    }
+    ```
+  - **Response:** `200 OK` - Returns access token, token type, and expiration
+    ```json
+    {
+      "access_token": "string",
+      "token_type": "Bearer",
+      "expires_in": 3600
+    }
+    ```
+  - **Error Responses:**
+    - `400 Bad Request` - Invalid request parameters (e.g., missing realm)
+    - `401 Unauthorized` - Invalid client credentials
+    - `403 Forbidden` - Insufficient scope authorization
+    - `429 Too Many Requests` - Rate limit exceeded
 
 #### Health
 - `GET /health` - Health check endpoint
@@ -127,22 +196,54 @@ cp .env.example .env
 Then edit the `.env` file and configure the following variables:
 
 ```bash
+# Application Configuration
+PORT=3005
+NODE_ENV=development
+
+# Main Database Configuration
+DB_HOST=localhost
+DB_PORT=5438
+DB_USERNAME=myuser
+DB_PASSWORD=mypassword
+DB_NAME=mydb
+
+# Keycloak Database
+KEYCLOAK_DB_USERNAME=keycloak
+KEYCLOAK_DB_PASSWORD=keycloak
+KEYCLOAK_DB_NAME=keycloak
+KEYCLOAK_DB_PORT=5439
+
+# Keycloak Admin
+KEYCLOAK_ADMIN=admin
+KEYCLOAK_ADMIN_PASSWORD=admin
+KEYCLOAK_PORT=8088
+KEYCLOAK_TIMEOUT=5000
+
 # Optional: Set to 'true' to use migrations instead of synchronize
 USE_MIGRATIONS=false
 ```
 
-### Step 3: Start PostgreSQL Database
+### Step 3: Start Services with Docker Compose
 
-Start the PostgreSQL database using Docker Compose:
+Start PostgreSQL and Keycloak services using Docker Compose:
 
 ```bash
-docker-compose up -d postgres
+docker-compose up -d
 ```
 
-This will start a PostgreSQL 15 container on port `5438` with:
-- Username: `myuser`
-- Password: `mypassword`
-- Database: `mydb`
+This will start:
+- **PostgreSQL** (main database) on port `5438`:
+  - Username: `myuser`
+  - Password: `mypassword`
+  - Database: `mydb`
+- **Keycloak Database** on port `5439`:
+  - Username: `keycloak`
+  - Password: `keycloak`
+  - Database: `keycloak`
+- **Keycloak** on port `8084`:
+  - Admin Console: `http://localhost:8084`
+  - Admin Username: `admin`
+  - Admin Password: `admin`
 
 ### Step 4: Run Database Migrations
 
@@ -177,15 +278,42 @@ The API will be available at `http://localhost:3005/training-plan`
    curl http://localhost:3005/training-plan/health
    ```
 
-2. Test deals endpoint:
+2. Test OAuth2 token endpoint (requires Keycloak client setup):
+   ```bash
+   curl -X POST http://localhost:3005/training-plan/oauth2/token \
+     -H "Content-Type: application/json" \
+     -d '{
+       "client_id": "your-client-id",
+       "client_secret": "your-client-secret",
+       "realm": "your-realm",
+       "scope": "all"
+     }'
+   ```
+
+3. Test deals endpoint:
    ```bash
    curl http://localhost:3005/training-plan/deals
    ```
 
-3. Test memberships endpoint:
+4. Test memberships endpoint:
    ```bash
    curl http://localhost:3005/training-plan/memberships
    ```
+
+### Step 8: Set Up Keycloak (Optional)
+
+To use the authentication endpoints, you'll need to configure Keycloak:
+
+1. Access Keycloak Admin Console at `http://localhost:8084`
+2. Log in with admin credentials (default: `admin`/`admin`)
+3. Create a realm (or use an existing one)
+4. Create a client with:
+   - Client ID: Your client identifier
+   - Client Protocol: `openid-connect`
+   - Access Type: `confidential`
+   - Service Accounts Enabled: `ON` (for client credentials flow)
+5. Note the client secret from the Credentials tab
+6. Use these values when calling the `/oauth2/token` endpoint
 
 ## Available Scripts
 
@@ -275,6 +403,9 @@ npm run type-check
 src/
 ├── app/
 │   ├── modules/
+│   │   ├── auth/            # Authentication module
+│   │   │   ├── guards/      # Auth guard for protecting endpoints
+│   │   │   └── models/      # Auth request/response models
 │   │   ├── database/        # Database configuration and migrations
 │   │   └── health/          # Health check module
 │   └── config/              # Configuration service
@@ -292,9 +423,41 @@ scripts/
 └── seed.ts                  # Database seeding script
 ```
 
+## Authentication
+
+The API includes OAuth2 authentication via Keycloak. The authentication module provides:
+
+- **Token Endpoint**: `POST /oauth2/token` - Issues access tokens using client credentials flow
+- **Auth Guard**: `AuthGuard` - Protects endpoints by validating Bearer tokens
+- **Token Validation**: Validates JWT tokens and checks expiration
+
+### Using Authentication
+
+To protect an endpoint, use the `@UseGuards(AuthGuard)` decorator:
+
+```typescript
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from './auth/guards/auth.guard';
+
+@Controller('protected')
+export class ProtectedController {
+  @Get()
+  @UseGuards(AuthGuard)
+  getProtectedData() {
+    return { message: 'This endpoint requires authentication' };
+  }
+}
+```
+
+### Making Authenticated Requests
+
+Include the access token in the Authorization header:
+
+```bash
+curl -H "Authorization: Bearer <your-access-token>" \
+  http://localhost:3005/training-plan/protected
+```
+
 ## Next Steps
 
-- [ ] Create Gateway
-- [ ] Add authentication/authorization
-- [ ] Expand API endpoints (POST, PUT, DELETE)
-- [ ] Add comprehensive test coverage
+- [ ] Demo to P&V

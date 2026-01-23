@@ -7,7 +7,7 @@ export class UpdateMembershipModel {
   @ApiProperty({
     description: 'Membership status (case-insensitive)',
     enum: MembershipStatus,
-    example: MembershipStatus.ACTIVE,
+    example: MembershipStatus.Active,
     required: true
   })
   @Transform(({ value }) => {

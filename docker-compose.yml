@@ -2,25 +2,75 @@ networks:
   auth-service-network:
     driver: 'bridge'
 volumes:
-  auth-service-keycloak-data-training:
-    driver: 'local'
-  auth-service-keycloak-db-data-training:
-    driver: 'local'
-  auth-service-redis-data-training:
-    driver: 'local'
   postgres-data-training:
     driver: 'local'
-
+  keycloak-data-training:
+    driver: 'local'
+  keycloak-db-data-training:
+    driver: 'local'
 services:
   postgres:
     image: postgres:15
     container_name: postgres_db_training
     restart: always
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydb
+      POSTGRES_USER: ${DB_USERNAME:-myuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mypassword}
+      POSTGRES_DB: ${DB_NAME:-mydb}
     ports:
-      - '5438:5432'
+      - '${DB_PORT:-5438}:5432'
     volumes:
       - postgres-data-training:/var/lib/postgresql/data
+    networks:
+      - auth-service-network
+
+  keycloak-db-training:
+    image: postgres:15
+    container_name: keycloak-db-training
+    restart: always
+    environment:
+      POSTGRES_USER: ${KEYCLOAK_DB_USERNAME:-keycloak}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak}
+      POSTGRES_DB: ${KEYCLOAK_DB_NAME:-keycloak}
+    ports:
+      - '${KEYCLOAK_DB_PORT:-5439}:5432'
+    volumes:
+      - keycloak-db-data-training:/var/lib/postgresql/data
+    networks:
+      - auth-service-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.0
+    container_name: keycloak-training
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: localhost
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db-training:5432/keycloak
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USERNAME:-keycloak}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak}
+      KC_HTTP_ENABLED: true
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HTTP_RELATIVE_PATH: /
+      KC_PROXY: edge
+      KC_PROXY_HEADERS: xforwarded
+      #
+      KC_HEALTH_ENABLED: 'true'
+      KC_HEALTH_LIVENESS_PROBE_ENABLED: 'true'
+      KC_HEALTH_READINESS_PROBE_ENABLED: 'true'
+    ports:
+      - '${KEYCLOAK_PORT:-8084}:8080'
+    command: ['start-dev']
+    depends_on:
+      - keycloak-db-training
+    networks:
+      - auth-service-network
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+        labels: 'service=keycloak'

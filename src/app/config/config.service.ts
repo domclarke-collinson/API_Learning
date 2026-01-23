@@ -32,4 +32,15 @@ export class AppConfigService {
   get isDevelopment(): boolean {
     return this.nodeEnv === 'development';
   }
+
+  get keycloakConfig() {
+    // Use KEYCLOAK_BASE_URL if provided, otherwise build from KEYCLOAK_PORT
+    const baseUrl = this.configService.get<string>('KEYCLOAK_BASE_URL');
+    const port = this.configService.get<number>('KEYCLOAK_PORT', 8084);
+
+    return {
+      baseUrl: baseUrl || `http://localhost:${port}`,
+      timeout: this.configService.get<number>('KEYCLOAK_TIMEOUT', 10000)
+    };
+  }
 }

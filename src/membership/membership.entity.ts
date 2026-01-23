@@ -35,13 +35,13 @@ export class Membership {
   @Column({
     type: 'enum',
     enum: MembershipStatus,
-    default: MembershipStatus.ACTIVE
+    default: MembershipStatus.Active
   })
   @IsEnum(MembershipStatus)
   @ApiProperty({
     description: 'Membership status',
     enum: MembershipStatus,
-    default: MembershipStatus.ACTIVE
+    default: MembershipStatus.Active
   })
   status: MembershipStatus;
 

@@ -8,11 +8,14 @@ import {
   Logger,
   NotFoundException,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
-  Query
+  Query,
+  UseGuards
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '../app/modules/auth/guards';
 import { DealStatus } from './deal-enums';
 import { Deal } from './deal.entity';
 import { DealService } from './deal.service';
@@ -20,6 +23,7 @@ import { CreateDealModel, DealResponseModel, UpdateDealModel } from './models';
 
 @ApiTags('deals')
 @Controller('deals')
+@UseGuards(AuthGuard)
 export class DealController {
   private readonly logger = new Logger(DealController.name);
 
@@ -61,9 +65,9 @@ export class DealController {
   @ApiParam({ name: 'dealId', type: 'number', description: 'Deal ID' })
   @ApiResponse({ status: 200, description: 'Deal found' })
   @ApiResponse({ status: 404, description: 'Deal not found' })
-  async findOne(@Param('dealId') dealId: string): Promise<DealResponseModel> {
+  async findOne(@Param('dealId', ParseIntPipe) dealId: number): Promise<DealResponseModel> {
     try {
-      const deal = await this.dealService.findOne(parseInt(dealId, 10));
+      const deal = await this.dealService.findOne(dealId);
 
       if (!deal) {
         throw new NotFoundException(`Deal with ID ${dealId} not found`);
@@ -119,11 +123,11 @@ export class DealController {
   @ApiResponse({ status: 400, description: 'Bad request - invalid input' })
   @ApiResponse({ status: 404, description: 'Deal not found' })
   async updateStatus(
-    @Param('dealId') dealId: string,
+    @Param('dealId', ParseIntPipe) dealId: number,
     @Body() updateDealDto: UpdateDealModel
   ): Promise<DealResponseModel> {
     try {
-      const deal = await this.dealService.update(parseInt(dealId, 10), updateDealDto);
+      const deal = await this.dealService.update(dealId, updateDealDto);
       return DealResponseModel.fromEntity(deal);
     } catch (error) {
       this.logger.error(`Error updating deal ${dealId}`, error);
